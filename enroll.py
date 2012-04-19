@@ -41,7 +41,6 @@ for dept in depts:
     t = soup('table')[2]
     rowcnt = 0
     for row in t('tr'):
-        print "row!"
         vals = [datetime.datetime.now()]
         if len(row('td')) != 8:
                 continue
@@ -59,5 +58,5 @@ for dept in depts:
         c.execute('''INSERT INTO enrollment VALUES (?,?,?,?,?,?,?,?,?,?)''', tuple(vals))
         conn.commit()
         c.close()
-        print "%i records added" % rowcnt
+    print "%i records added" % rowcnt
 conn.close()

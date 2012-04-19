@@ -12,24 +12,25 @@ figbasedir = "/home/mvexel/www/"
 
 conn = sqlite3.connect(os.path.join(datapath,dbfilename))
 
+print "start creating new charts"
 for dept in departments:
+    chartcnt=0
     classindices = conn.execute('SELECT DISTINCT(classindex) FROM enrollment WHERE department = ?;',(dept,)).fetchall()
     figdir = os.path.join(figbasedir,dept)
     for classindex in classindices:
-        print classindex
         (name,cap, mindate, maxdate) = conn.execute('SELECT subject || catnumber, cap, min(date), max(date) FROM enrollment WHERE classindex = ?',classindex).fetchone()
-        print maxdate
+#        print maxdate
         curenrol = conn.execute('SELECT enrolled FROM enrollment WHERE classindex = ? AND date = ?',(classindex[0],maxdate)).fetchone()
         mindate = datetime.fromtimestamp(float(mindate))
         maxdate = datetime.fromtimestamp(float(maxdate))
-        print name, cap, mindate, maxdate
+#        print name, cap, mindate, maxdate
         enrollment = conn.execute('SELECT date, enrolled FROM enrollment WHERE classindex = ?',classindex).fetchall()
         dates = []
         enrolled = []
         for record in enrollment:
             dates.append(datetime.fromtimestamp(float(record[0])))
             enrolled.append(record[1])
-        print dates,enrolled
+#        print dates,enrolled
         fig = plt.figure(figsize=(8,6))
         ax = fig.add_subplot(111,autoscale_on=False, xlim=(mindate,maxdate), ylim=(0,cap))
         plt.ylabel('Enrollment')
@@ -40,5 +41,5 @@ for dept in departments:
         plt.title(name + ' Enrollment as of ' + datetime.now().strftime("%d %B %Y, %I%p"))
         fig.autofmt_xdate(rotation=45)
         fig.savefig(os.path.join(figdir,name+'.png'), dpi=96)
-#chart = SimpleLineChart(200, 125, y_range=[0, max_y])
-
+        chartcnt+=1
+    print "%i new charts created for %s" % (chartcnt, dept)
