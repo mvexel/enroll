@@ -17,9 +17,12 @@ for dept in departments:
     figdir = os.path.join(figbasedir,dept)
     for classindex in classindices:
         print classindex
-        (name,cap) = conn.execute('SELECT subject || catnumber, cap FROM enrollment WHERE classindex = ?',classindex).fetchone()
-        print name
-        print cap
+        (name,cap, mindate, maxdate) = conn.execute('SELECT subject || catnumber, cap, min(date), max(date) FROM enrollment WHERE classindex = ?',classindex).fetchone()
+        print maxdate
+        curenrol = conn.execute('SELECT enrolled FROM enrollment WHERE classindex = ? AND date = ?',(classindex[0],maxdate)).fetchone()
+        mindate = datetime.fromtimestamp(float(mindate))
+        maxdate = datetime.fromtimestamp(float(maxdate))
+        print name, cap, mindate, maxdate
         enrollment = conn.execute('SELECT date, enrolled FROM enrollment WHERE classindex = ?',classindex).fetchall()
         dates = []
         enrolled = []
@@ -28,11 +31,14 @@ for dept in departments:
             enrolled.append(record[1])
         print dates,enrolled
         fig = plt.figure(figsize=(8,6))
-        plt.plot(dates,enrolled)
-        fig.autofmt_xdate(rotation=30)
+        ax = fig.add_subplot(111,autoscale_on=False, xlim=(mindate,maxdate), ylim=(0,cap))
         plt.ylabel('Enrollment')
         plt.xlabel('Date')
+        lines = ax.plot(dates,enrolled)
+        plt.setp(lines, linewidth=3.0)
+        ax.annotate('current enrollment: %i' % curenrol, xy=(0.95,0.95), xycoords='figure fraction', xytext=(0.95,0.95), textcoords='axes fraction', horizontalalignment='right', verticalalignment='top')
         plt.title(name + ' Enrollment as of ' + datetime.now().strftime("%d %B %Y, %I%p"))
+        fig.autofmt_xdate(rotation=45)
         fig.savefig(os.path.join(figdir,name+'.png'), dpi=96)
 #chart = SimpleLineChart(200, 125, y_range=[0, max_y])
 
