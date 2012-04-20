@@ -1,6 +1,7 @@
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib import dates
 import sqlite3
 import os
 from datetime import datetime
@@ -25,17 +26,22 @@ for dept in departments:
         maxdate = datetime.fromtimestamp(float(maxdate))
 #        print name, cap, mindate, maxdate
         enrollment = conn.execute('SELECT date, enrolled FROM enrollment WHERE classindex = ?',classindex).fetchall()
-        dates = []
+        dts = []
         enrolled = []
         for record in enrollment:
-            dates.append(datetime.fromtimestamp(float(record[0])))
+            dts.append(datetime.fromtimestamp(float(record[0])))
             enrolled.append(record[1])
 #        print dates,enrolled
+        hfmt = dates.DateFormatter('%m/%d %H:%M')
         fig = plt.figure(figsize=(8,6))
         ax = fig.add_subplot(111,autoscale_on=False, xlim=(mindate,maxdate), ylim=(0,cap))
+#        ax.xaxis.set_major_locator(dates.HourLocator())
+        ax.xaxis.set_major_formatter(hfmt)
+        locator = dates.AutoDateLocator()
+        ax.xaxis.set_major_locator(locator)
         plt.ylabel('Enrollment')
         plt.xlabel('Date')
-        lines = ax.plot(dates,enrolled)
+        lines = ax.plot(dts,enrolled)
         plt.setp(lines, linewidth=3.0)
         ax.annotate('current enrollment: %i' % curenrol, xy=(0.95,0.95), xycoords='figure fraction', xytext=(0.95,0.95), textcoords='axes fraction', horizontalalignment='right', verticalalignment='top')
         plt.title(name + ' Enrollment as of ' + datetime.now().strftime("%d %B %Y, %I%p"))
