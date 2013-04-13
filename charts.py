@@ -32,14 +32,14 @@ for dept in departments:
         curenrol = conn.execute('SELECT enrolled FROM enrollment WHERE classindex = ? AND date = ?',(classindex,maxdate,)).fetchone()
         mindate = datetime.fromtimestamp(float(mindate))
         maxdate = datetime.fromtimestamp(float(maxdate))
-        print name, cap, mindate, maxdate
+        #print name, cap, mindate, maxdate
         enrollment = conn.execute('SELECT date, enrolled FROM enrollment WHERE classindex = ?',(classindex,)).fetchall()
         dts = []
         enrolled = []
         for record in enrollment:
             dts.append(datetime.fromtimestamp(float(record[0])))
             enrolled.append(record[1])
-        print dates,enrolled
+        #print dates,enrolled
         hfmt = dates.DateFormatter('%m/%d %H:%M')
         fig = plt.figure(figsize=(8,6))
         ax = fig.add_subplot(111,autoscale_on=False, xlim=(mindate,maxdate), ylim=(0,cap))

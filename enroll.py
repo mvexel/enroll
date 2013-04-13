@@ -59,7 +59,7 @@ for dept in depts:
                     vals.append(None)
             cellcnt+=1
         vals.append(dept)
-        print len(vals)
+        #print len(vals)
         if len(vals) != 10: 
             continue
         c = conn.cursor()
