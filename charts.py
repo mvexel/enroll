@@ -4,34 +4,42 @@ import matplotlib.pyplot as plt
 from matplotlib import dates
 import sqlite3
 import os
+import string
 from datetime import datetime
 
-departments = ['ARTH', 'GEOG']
-datapath = "/home/mvexel/enroll/"
+departments = ['ARTH']
+datapath = "/home/ubuntu/enroll/"
 dbfilename = "enroll.db"
-figbasedir = "/home/mvexel/www/"
-
+figbasedir = "/home/ubuntu/www/"
+valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
 conn = sqlite3.connect(os.path.join(datapath,dbfilename))
 
 print "start creating new charts"
 for dept in departments:
     chartcnt=0
-    classindices = conn.execute('SELECT DISTINCT(classindex) FROM enrollment WHERE department = ?;',(dept,)).fetchall()
     figdir = os.path.join(figbasedir,dept)
-    for classindex in classindices:
-        (name,cap, mindate, maxdate) = conn.execute('SELECT subject || catnumber, cap, min(date), max(date) FROM enrollment WHERE classindex = ?',classindex).fetchone()
+    for row in conn.execute('SELECT DISTINCT(classindex) FROM enrollment WHERE department = ?;',(dept,)):
+        if row[0] is None:
+            continue
+        classindex = int(row[0])
+        print 'processing class index %s' % (classindex)
+        (name,cap, mindate, maxdate) = conn.execute('SELECT title || catnumber, cap, min(date), max(date) FROM enrollment WHERE classindex = ?',(classindex,)).fetchone()
+        if name is None:
+            continue
+        #normalize name
+        name = ''.join(c for c in name if c in valid_chars)
 #        print maxdate
-        curenrol = conn.execute('SELECT enrolled FROM enrollment WHERE classindex = ? AND date = ?',(classindex[0],maxdate)).fetchone()
+        curenrol = conn.execute('SELECT enrolled FROM enrollment WHERE classindex = ? AND date = ?',(classindex,maxdate,)).fetchone()
         mindate = datetime.fromtimestamp(float(mindate))
         maxdate = datetime.fromtimestamp(float(maxdate))
-#        print name, cap, mindate, maxdate
-        enrollment = conn.execute('SELECT date, enrolled FROM enrollment WHERE classindex = ?',classindex).fetchall()
+        print name, cap, mindate, maxdate
+        enrollment = conn.execute('SELECT date, enrolled FROM enrollment WHERE classindex = ?',(classindex,)).fetchall()
         dts = []
         enrolled = []
         for record in enrollment:
             dts.append(datetime.fromtimestamp(float(record[0])))
             enrolled.append(record[1])
-#        print dates,enrolled
+        print dates,enrolled
         hfmt = dates.DateFormatter('%m/%d %H:%M')
         fig = plt.figure(figsize=(8,6))
         ax = fig.add_subplot(111,autoscale_on=False, xlim=(mindate,maxdate), ylim=(0,cap))

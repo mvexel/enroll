@@ -5,10 +5,11 @@ import datetime
 import time
 import os
 
-depts = ['ARTH','GEOG']
-baseurl = 'http://www.acs.utah.edu/uofu/stu/scheduling/crse-info?term=1128&subj='
+#depts = ['ARTH','GEOG']
+depts = ['ARTH']
+baseurl = 'http://www.acs.utah.edu/uofu/stu/scheduling/crse-info?term=1138&subj='
 
-datapath = "/home/mvexel/enroll/"
+datapath = "/home/ubuntu/enroll/"
 dbfilename = "enroll.db"
 fieldtypes = "isiisiii"
 
@@ -38,20 +39,27 @@ for dept in depts:
     url = baseurl + dept
     print url
     soup = BeautifulSoup(urllib2.urlopen(url))
-    t = soup('table')[2]
+    t = soup('table')[0]
     rowcnt = 0
     for row in t('tr'):
+        cellcnt = 0
         vals = [datetime.datetime.now()]
         if len(row('td')) != 8:
-                continue
+            #print 'skipping weird row'
+            continue
         rowcnt+=1
         for cell in row('td'):
+            #print 'parsing row %i, cell %i, should be be %s, content %s' % (rowcnt, cellcnt, fieldtypes[cellcnt], cell.string)    
             if cell.string is not None:
-                if fieldtypes[len(vals)-1] == 's':
+                if fieldtypes[cellcnt] == 's':
                     vals.append(cell.string.strip())
                 else:
                     vals.append(int(cell.string.strip()))
+            else:
+                    vals.append(None)
+            cellcnt+=1
         vals.append(dept)
+        print len(vals)
         if len(vals) != 10: 
             continue
         c = conn.cursor()
