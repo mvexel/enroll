@@ -14,3 +14,11 @@ python modules (`pip install`)
     sqlite3 mathplotlib beautifulsoup4 pillow  
 
 That is all, I think..
+
+Oh you will need to create:
+
+    ~/www
+    ~/www/ARTH
+    ~/www/enrollment/ARTH
+
+And have PyGallery in ~/pygal, get it here: http://pygallery.sourceforge.net/
