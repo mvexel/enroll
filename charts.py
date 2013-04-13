@@ -7,7 +7,7 @@ import os
 import string
 from datetime import datetime
 
-departments = ['ARTH']
+departments = ['ARTH', 'GEOG']
 datapath = "/home/ubuntu/enroll/"
 dbfilename = "enroll.db"
 figbasedir = "/home/ubuntu/www/"

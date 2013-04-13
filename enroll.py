@@ -5,8 +5,7 @@ import datetime
 import time
 import os
 
-#depts = ['ARTH','GEOG']
-depts = ['ARTH']
+depts = ['ARTH','GEOG']
 baseurl = 'http://www.acs.utah.edu/uofu/stu/scheduling/crse-info?term=1138&subj='
 
 datapath = "/home/ubuntu/enroll/"
