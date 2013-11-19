@@ -6,7 +6,8 @@ import time
 import os
 
 depts = ['ARTH','GEOG']
-baseurl = 'http://www.acs.utah.edu/uofu/stu/scheduling/crse-info?term=1138&subj='
+term = '1144'
+baseurl = 'http://www.acs.utah.edu/uofu/stu/scheduling/crse-info?term=%s&subj=' % (term,)
 
 datapath = "/home/ubuntu/enroll/"
 dbfilename = "enroll.db"
