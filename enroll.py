@@ -14,7 +14,7 @@ term = '1148'  # fall 2014
 baseurl = 'http://www.acs.utah.edu/uofu/stu/'\
     'scheduling/crse-info?term=%s&subj=' % (term,)
 
-datapath = "/tmp"
+datapath = "/home/ubuntu/enroll"
 dbfilename = "enroll-fall2014.db"
 fieldtypes = "isiisiii"
 
