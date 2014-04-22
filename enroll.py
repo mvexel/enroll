@@ -5,30 +5,34 @@ import datetime
 import time
 import os
 
-depts = ['ARTH','GEOG']
-term = '1144'
-baseurl = 'http://www.acs.utah.edu/uofu/stu/scheduling/crse-info?term=%s&subj=' % (term,)
+depts = ['ARTH', 'GEOG']
+term = '1148'  # fall 2014
+baseurl = 'http://www.acs.utah.edu/uofu/stu/'\
+    'scheduling/crse-info?term=%s&subj=' % (term,)
 
 datapath = "/home/ubuntu/enroll/"
-dbfilename = "enroll.db"
+dbfilename = "enroll-fall2014.db"
 fieldtypes = "isiisiii"
+
 
 def adapt_datetime(ts):
     return time.mktime(ts.timetuple())
 
 if not os.path.exists(os.path.join(datapath, dbfilename)):
 # CREATE DATABASE
-    conn = sqlite3.connect(os.path.join(datapath,dbfilename))
+    conn = sqlite3.connect(os.path.join(datapath, dbfilename))
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS enrollment 
-    (date text, classindex integer, subject text, catnumber integer, section integer, title text, cap integer, enrolled integer, available integer, department text)
+    c.execute('''CREATE TABLE IF NOT EXISTS enrollment
+    (date text, classindex integer, subject text, catnumber integer,
+    section integer, title text, cap integer, enrolled integer,
+    available integer, department text)
     ''')
     conn.commit()
     c.close()
     print 'table created'
 
 try:
-    conn = sqlite3.connect(os.path.join(datapath,dbfilename))
+    conn = sqlite3.connect(os.path.join(datapath, dbfilename))
 except NameError:
     print "database was open"
 
@@ -47,9 +51,10 @@ for dept in depts:
         if len(row('td')) != 8:
             #print 'skipping weird row'
             continue
-        rowcnt+=1
+        rowcnt += 1
         for cell in row('td'):
-            #print 'parsing row %i, cell %i, should be be %s, content %s' % (rowcnt, cellcnt, fieldtypes[cellcnt], cell.string)    
+            #print 'parsing row %i, cell %i, should be be %s, content %s' %\
+            #    (rowcnt, cellcnt, fieldtypes[cellcnt], cell.string)
             if cell.string is not None:
                 if fieldtypes[cellcnt] == 's':
                     vals.append(cell.string.strip())
@@ -57,13 +62,14 @@ for dept in depts:
                     vals.append(int(cell.string.strip()))
             else:
                     vals.append(None)
-            cellcnt+=1
+            cellcnt += 1
         vals.append(dept)
         #print len(vals)
-        if len(vals) != 10: 
+        if len(vals) != 10:
             continue
         c = conn.cursor()
-        c.execute('''INSERT INTO enrollment VALUES (?,?,?,?,?,?,?,?,?,?)''', tuple(vals))
+        c.execute('''INSERT INTO enrollment VALUES (?,?,?,?,?,?,?,?,?,?)''',
+                  tuple(vals))
         conn.commit()
         c.close()
     print "%i records added" % rowcnt
