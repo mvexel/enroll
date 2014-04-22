@@ -4,15 +4,36 @@ import sqlite3
 import datetime
 import time
 import os
+import config
+import requests
 
+hot_courses = [4230]  # courses that need email slag
+hot_emails = ['m@rtijn.org', 'jessen.kelly@utah.edu']
 depts = ['ARTH', 'GEOG']
 term = '1148'  # fall 2014
 baseurl = 'http://www.acs.utah.edu/uofu/stu/'\
     'scheduling/crse-info?term=%s&subj=' % (term,)
 
-datapath = "/home/ubuntu/enroll/"
+datapath = "/tmp"
 dbfilename = "enroll-fall2014.db"
 fieldtypes = "isiisiii"
+
+
+def send_email(catnumber, old, new):
+    print 'sending email about %s' % catnumber
+    if new - old > 0:
+        subject = 'More enrollment!'
+    else:
+        subject = 'Dropped :('
+    return requests.post(
+        "https://api.mailgun.net/v2/maproulette.org/messages",
+        auth=("api", config.mailgun_api_key),
+        data={"from": "Boni <m@rtijn.org>",
+              "to": hot_emails,
+              "subject": subject,
+              "text": "Enrollment for %s changed, "
+                      "it was %s and now it is %s."
+                      "\n\nLove - Mannetje" % (catnumber, old, new)})
 
 
 def adapt_datetime(ts):
@@ -49,11 +70,11 @@ for dept in depts:
         cellcnt = 0
         vals = [datetime.datetime.now()]
         if len(row('td')) != 8:
-            #print 'skipping weird row'
+            # print 'skipping weird row'
             continue
         rowcnt += 1
         for cell in row('td'):
-            #print 'parsing row %i, cell %i, should be be %s, content %s' %\
+            # print 'parsing row %i, cell %i, should be be %s, content %s' %\
             #    (rowcnt, cellcnt, fieldtypes[cellcnt], cell.string)
             if cell.string is not None:
                 if fieldtypes[cellcnt] == 's':
@@ -64,13 +85,24 @@ for dept in depts:
                     vals.append(None)
             cellcnt += 1
         vals.append(dept)
-        #print len(vals)
+        # print len(vals)
         if len(vals) != 10:
             continue
         c = conn.cursor()
         c.execute('''INSERT INTO enrollment VALUES (?,?,?,?,?,?,?,?,?,?)''',
                   tuple(vals))
         conn.commit()
-        c.close()
     print "%i records added" % rowcnt
+
+# now check the hot courses
+
+for hot_course in hot_courses:
+    q = c.execute("select enrolled from enrollment "
+                  "where catnumber = %i order by date desc limit 2;" %
+                  hot_course).fetchall()
+    results = [res[0] for res in q]
+    if len(results) == 2 and results[0] != results[1]:
+        send_email(hot_course, results[1], results[0])
+
+c.close()
 conn.close()
